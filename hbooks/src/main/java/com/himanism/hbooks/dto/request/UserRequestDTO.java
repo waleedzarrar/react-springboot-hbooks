@@ -1,27 +1,19 @@
-package com.himanism.hbooks.entity;
+package com.himanism.hbooks.dto.request;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class UserRequestDTO {
     private String firstName;
     private String middleName;
     private String lastName;
-    private String fullName;
     private String email;
     private String mobileNo;
     private String gender;
     private LocalDate dateOfBirth;
-    private String password; // Encrypted
 }
