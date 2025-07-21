@@ -3,139 +3,100 @@ package com.himanism.hbooks.service;
 import com.himanism.hbooks.dto.request.UserRequestDTO;
 import com.himanism.hbooks.dto.response.UserResponseDTO;
 import com.himanism.hbooks.entity.User;
+import com.himanism.hbooks.exception.ResourceNotFoundException;
+import com.himanism.hbooks.mapper.UserMapper;
 import com.himanism.hbooks.repository.UserRepository;
+import com.himanism.hbooks.service.helper.UserServiceHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
-public class UserServiceImpl implements UserServiceInterface {
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final UserServiceHelper userHelper;
 
     @Autowired
-    private UserRepository userRepository;
-
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, UserServiceHelper userHelper) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.userHelper = userHelper;
+    }
 
     @Override
     public UserResponseDTO createUser(UserRequestDTO dto) {
-        User user = new User();
-        user.setFirstName(dto.getFirstName());
-        user.setMiddleName(dto.getMiddleName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-        user.setMobileNo(dto.getMobileNo());
-        user.setGender(dto.getGender());
-        user.setDateOfBirth(dto.getDateOfBirth());
+        try {
+            User user = userMapper.toEntity(dto);
 
-        StringBuilder fullName = new StringBuilder(dto.getFirstName());
-        if (dto.getMiddleName() != null && !dto.getMiddleName().trim().isEmpty()) {
-            fullName.append(" ").append(dto.getMiddleName().trim());
+            // Use helper to set fullName and password
+            userHelper.prepareUserForSave(user);
+
+            User savedUser = userRepository.save(user);
+            return userMapper.toResponseDto(savedUser);
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while creating user: " + e.getMessage(), e);
         }
-        fullName.append(" ").append(dto.getLastName());
-        user.setFullName(fullName.toString().trim());
-
-        String firstNamePart = "";
-        if (dto.getFirstName() != null && !dto.getFirstName().isEmpty()) {
-            firstNamePart = dto.getFirstName()
-                .substring(0, Math.min(4, dto.getFirstName().length()))
-                .toUpperCase();
-        }
-        String dobYearPart = (dto.getDateOfBirth() != null)
-                ? String.valueOf(dto.getDateOfBirth().getYear()) : "";
-        String rawPassword = firstNamePart + dobYearPart;
-        String encodedPassword = passwordEncoder.encode(rawPassword);
-
-        user.setPassword(encodedPassword);
-
-        User saved = userRepository.save(user);
-
-        return userToResponse(saved);
     }
 
     @Override
     public UserResponseDTO getUserById(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        return user.map(this::userToResponse).orElse(null);
+        try {
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+            return userMapper.toResponseDto(user);
+        } catch (ResourceNotFoundException ex) {
+            throw ex;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch user: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(this::userToResponse)
-                .collect(Collectors.toList());
+        try {
+            List<User> users = userRepository.findAll();
+            return userMapper.toResponseDtoList(users);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch all users: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return null;
-        }
-        User user = userOpt.get();
-        boolean recalculatePassword = false;
+        try {
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        if (dto.getFirstName() != null && !dto.getFirstName().equals(user.getFirstName())) {
-            user.setFirstName(dto.getFirstName());
-            recalculatePassword = true;
-        }
-        if (dto.getMiddleName() != null) user.setMiddleName(dto.getMiddleName());
-        if (dto.getLastName() != null) user.setLastName(dto.getLastName());
-        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
-        if (dto.getMobileNo() != null) user.setMobileNo(dto.getMobileNo());
-        if (dto.getGender() != null) user.setGender(dto.getGender());
-        if (dto.getDateOfBirth() != null && !dto.getDateOfBirth().equals(user.getDateOfBirth())) {
-            user.setDateOfBirth(dto.getDateOfBirth());
-            recalculatePassword = true;
-        }
+            // Update entity fields from DTO
+            userMapper.updateUserFromDto(dto, user);
 
-        StringBuilder fullName = new StringBuilder(user.getFirstName());
-        if (user.getMiddleName() != null && !user.getMiddleName().trim().isEmpty()) {
-            fullName.append(" ").append(user.getMiddleName().trim());
-        }
-        fullName.append(" ").append(user.getLastName());
-        user.setFullName(fullName.toString().trim());
+            // Recalculate fullName and password
+            userHelper.prepareUserForSave(user);
 
-        if (recalculatePassword) {
-            String firstNamePart = user.getFirstName() != null
-                    ? user.getFirstName().substring(0, Math.min(4, user.getFirstName().length())).toUpperCase()
-                    : "";
-            String dobYearPart = user.getDateOfBirth() != null
-                    ? String.valueOf(user.getDateOfBirth().getYear()) : "";
-            String rawPassword = firstNamePart + dobYearPart;
-            String encodedPassword = passwordEncoder.encode(rawPassword);
-            user.setPassword(encodedPassword);
+            User saved = userRepository.save(user);
+            return userMapper.toResponseDto(saved);
+        } catch (ResourceNotFoundException ex) {
+            throw ex;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update user: " + e.getMessage(), e);
         }
-
-        User saved = userRepository.save(user);
-        return userToResponse(saved);
     }
 
     @Override
     public boolean deleteUserById(Long id) {
-        if (userRepository.existsById(id)) {
+        try {
+            if (!userRepository.existsById(id)) {
+                throw new ResourceNotFoundException("User not found with id: " + id);
+            }
             userRepository.deleteById(id);
             return true;
-        } else {
-            return false;
+        } catch (ResourceNotFoundException ex) {
+            throw ex;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete user: " + e.getMessage(), e);
         }
-    }
-
-    private UserResponseDTO userToResponse(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getFirstName(),
-                user.getMiddleName(),
-                user.getLastName(),
-                user.getFullName(),
-                user.getEmail(),
-                user.getMobileNo(),
-                user.getGender(),
-                user.getDateOfBirth()
-        );
     }
 }
