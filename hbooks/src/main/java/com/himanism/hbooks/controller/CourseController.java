@@ -1,43 +1,82 @@
 package com.himanism.hbooks.controller;
 
-import com.himanism.hbooks.entity.Course;
+import com.himanism.hbooks.dto.request.CourseRequestDTO;
+import com.himanism.hbooks.dto.response.CourseResponseDTO;
+import com.himanism.hbooks.exception.ResourceNotFoundException;
 import com.himanism.hbooks.service.CourseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/courses")
-@CrossOrigin(origins =  "http://localhost:3000")
+@RequestMapping("/api/courses")
+@RequiredArgsConstructor
 public class CourseController {
 
-    @Autowired
-    private CourseService courseService;
+    private final CourseService service;
 
-    @GetMapping
-    public List<Course> getAllCourses(){
-        return courseService.getAllCourses();
+    @PostMapping
+    public ResponseEntity<?> createCourse(@RequestBody CourseRequestDTO dto) {
+        try {
+            CourseResponseDTO response = service.createCourse(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating course: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
-    public Course getCourse(@PathVariable Long id){
-        return courseService.getCourseById(id);
+    public ResponseEntity<?> getCourseById(@PathVariable Long id) {
+        try {
+            CourseResponseDTO course = service.getCourseById(id);
+            return ResponseEntity.ok(course);
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching course: " + e.getMessage());
+        }
     }
 
-    @PostMapping
-    public Course createCourse(@RequestBody Course course){
-        return courseService.createCourse(course);
+    @GetMapping
+    public ResponseEntity<?> getAllCourses() {
+        try {
+            List<CourseResponseDTO> courses = service.getAllCourses();
+            return ResponseEntity.ok(courses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching courses: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public Course updateCourse(@PathVariable Long id, @RequestBody Course course){
-        return courseService.updateCourse(id, course);
+    public ResponseEntity<?> updateCourse(@PathVariable Long id, @RequestBody CourseRequestDTO dto) {
+        try {
+            CourseResponseDTO updated = service.updateCourse(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating course: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCourse(@PathVariable Long id){
-        courseService.deleteCourse(id);
+    public ResponseEntity<?> deleteCourse(@PathVariable Long id) {
+        try {
+            service.deleteCourseById(id);
+            return ResponseEntity.ok("Course deleted successfully");
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting course: " + e.getMessage());
+        }
     }
 }

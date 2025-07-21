@@ -1,4 +1,4 @@
-package com.himanism.hbooks.service;
+package com.himanism.hbooks.service.impl;
 
 import com.himanism.hbooks.dto.request.UserRequestDTO;
 import com.himanism.hbooks.dto.response.UserResponseDTO;
@@ -6,6 +6,7 @@ import com.himanism.hbooks.entity.User;
 import com.himanism.hbooks.exception.ResourceNotFoundException;
 import com.himanism.hbooks.mapper.UserMapper;
 import com.himanism.hbooks.repository.UserRepository;
+import com.himanism.hbooks.service.UserService;
 import com.himanism.hbooks.service.helper.UserServiceHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,0 +1,18 @@
+package com.himanism.hbooks.entity.type;
+
+public enum CourseType {
+    IELTS_ACADEMIC,
+    IELTS_GENERAL,
+    IELTS_FAST_TRACK,
+    PTE_NORMAL_TRACK,
+    PTE_FAST_TRACK,
+    PTE_ONLINE,
+    DUOLINGO,
+    LEARN_ENGLISH_BEGINNERS,
+    SPOKEN_ENGLISH_BASIC,
+    SPOKEN_ENGLISH_ADVANCED,
+    ENGLISH_SPEAKING_COURSE,
+    SLOT_BOOKING,
+    OTHERS
+}
+
