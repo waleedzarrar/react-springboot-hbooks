@@ -3,6 +3,8 @@ package com.himanism.hbooks.controller;
 import com.himanism.hbooks.dto.request.UserRequestDTO;
 import com.himanism.hbooks.dto.response.UserResponseDTO;
 import com.himanism.hbooks.service.UserService;
+import com.himanism.hbooks.service.UserServiceInterface;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +14,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserServiceInterface userService;
+
 
     @PostMapping("/create")
     public UserResponseDTO createUser(@RequestBody UserRequestDTO dto) {
