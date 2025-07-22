@@ -1,6 +1,6 @@
 package com.himanism.hbooks.dto;
 
-import com.himanism.hbooks.entity.Role;
+import com.himanism.hbooks.enums.Role;
 
 public class SignupRequest {
     private String username;

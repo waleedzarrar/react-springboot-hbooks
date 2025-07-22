@@ -20,3 +20,7 @@ spring:
     multipart:
       max-file-size: 750KB
       max-request-size: 750KB
+
+jwt:
+   secret: "your-very-secure-and-long-jwt-secret-key-at-least-32-chars" # This line and the one below must be indented!
+   expiration-ms: 86400000  # 24 hours token expiry in milliseconds

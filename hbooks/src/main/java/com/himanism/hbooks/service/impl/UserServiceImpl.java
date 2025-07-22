@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
             User user = userMapper.toEntity(dto);
 
             // Use helper to set fullName and password
-            userHelper.prepareUserForSave(user);
+//            userHelper.prepareUserForSave(user);
 
             User savedUser = userRepository.save(user);
             return userMapper.toResponseDto(savedUser);
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
             userMapper.updateUserFromDto(dto, user);
 
             // Recalculate fullName and password
-            userHelper.prepareUserForSave(user);
+//            userHelper.prepareUserForSave(user);
 
             User saved = userRepository.save(user);
             return userMapper.toResponseDto(saved);
