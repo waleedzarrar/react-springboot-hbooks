@@ -2,7 +2,7 @@ package com.himanism.hbooks.service.impl;
 
 import com.himanism.hbooks.dto.request.CourseCategoryRequestDTO;
 import com.himanism.hbooks.dto.response.CourseCategoryResponseDTO;
-import com.himanism.hbooks.entity.category.CourseCategory;
+import com.himanism.hbooks.entity.CourseCategory;
 import com.himanism.hbooks.exception.ResourceNotFoundException;
 import com.himanism.hbooks.mapper.CourseCategoryMapper;
 import com.himanism.hbooks.repository.CourseCategoryRepository;

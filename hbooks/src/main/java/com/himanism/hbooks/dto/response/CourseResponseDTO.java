@@ -7,8 +7,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.himanism.hbooks.entity.track.CourseTrack;
-import com.himanism.hbooks.entity.type.CourseType;
+import com.himanism.hbooks.entity.CourseTrack;
+import com.himanism.hbooks.entity.CourseType;
 
 @Data
 @NoArgsConstructor

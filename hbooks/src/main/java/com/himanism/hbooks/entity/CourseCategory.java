@@ -1,11 +1,9 @@
-package com.himanism.hbooks.entity.category;
+package com.himanism.hbooks.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
-
-import com.himanism.hbooks.entity.Course;
 
 @Entity
 @Table(name = "course_categories")

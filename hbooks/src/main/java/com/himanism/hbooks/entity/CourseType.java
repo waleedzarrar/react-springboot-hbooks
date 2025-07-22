@@ -1,4 +1,4 @@
-package com.himanism.hbooks.entity.type;
+package com.himanism.hbooks.entity;
 
 public enum CourseType {
     IELTS_ACADEMIC,

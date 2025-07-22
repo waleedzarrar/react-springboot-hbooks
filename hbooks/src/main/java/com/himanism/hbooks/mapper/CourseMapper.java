@@ -3,7 +3,7 @@ package com.himanism.hbooks.mapper;
 import com.himanism.hbooks.dto.request.CourseRequestDTO;
 import com.himanism.hbooks.dto.response.CourseResponseDTO;
 import com.himanism.hbooks.entity.Course;
-import com.himanism.hbooks.entity.category.CourseCategory;
+import com.himanism.hbooks.entity.CourseCategory;
 
 import org.mapstruct.*;
 

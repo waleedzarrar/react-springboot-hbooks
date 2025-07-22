@@ -1,4 +1,4 @@
-package com.himanism.hbooks.controller.category;
+package com.himanism.hbooks.controller;
 
 import com.himanism.hbooks.dto.request.CourseCategoryRequestDTO;
 import com.himanism.hbooks.dto.response.CourseCategoryResponseDTO;

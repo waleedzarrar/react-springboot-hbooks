@@ -1,4 +1,4 @@
-package com.himanism.hbooks.entity.track;
+package com.himanism.hbooks.entity;
 
 public enum CourseTrack {
     NORMAL_TRACK,

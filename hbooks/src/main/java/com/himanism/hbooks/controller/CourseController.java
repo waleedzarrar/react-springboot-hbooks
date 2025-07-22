@@ -24,7 +24,7 @@ public class CourseController {
 
     private final CourseService service;
 
-    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR','FACULTY')")
+//    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR','FACULTY')")
     @PostMapping
     public ResponseEntity<CourseResponseDTO> createCourse(@Valid @RequestBody CourseRequestDTO dto) {
         CourseResponseDTO response = service.createCourse(dto);
@@ -38,21 +38,21 @@ public class CourseController {
         return ResponseEntity.ok(course);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR','FACULTY','STUDENT')")
+//    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR','FACULTY','STUDENT')")
     @GetMapping
     public ResponseEntity<List<CourseResponseDTO>> getAllCourses() {
         List<CourseResponseDTO> courses = service.getAllCourses();
         return ResponseEntity.ok(courses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR')")
+//    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR')")
     @PutMapping("/{id}")
     public ResponseEntity<CourseResponseDTO> updateCourse(@PathVariable Long id, @Valid @RequestBody CourseRequestDTO dto) {
         CourseResponseDTO updated = service.updateCourse(id, dto);
         return ResponseEntity.ok(updated);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCourse(@PathVariable Long id) {
         service.deleteCourseById(id);
