@@ -1,37 +1,27 @@
 package com.himanism.hbooks.mapper;
 
+
 import com.himanism.hbooks.dto.request.CourseRequestDTO;
 import com.himanism.hbooks.dto.response.CourseResponseDTO;
 import com.himanism.hbooks.entity.Course;
-import com.himanism.hbooks.entity.CourseCategory;
 
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {})
+@Mapper(componentModel = "spring")
 public interface CourseMapper {
 
-    @Mapping(target = "category", expression = "java(toCategoryEntity(dto.getCategoryId()))")
+    // Maps entity to response DTO
+    CourseResponseDTO toDto(Course course);
+
+    // Maps creation/update DTO to entity
     Course toEntity(CourseRequestDTO dto);
 
-    @Mapping(target = "category", source = "category")
-    CourseResponseDTO toResponseDto(Course entity);
+    // Update existing entity from DTO
+    void updateEntityFromDto(CourseRequestDTO dto, @MappingTarget Course entity);
 
-    List<CourseResponseDTO> toResponseDtoList(List<Course> entities);
-
-    @Mapping(target = "category", expression = "java(toCategoryEntity(dto.getCategoryId()))")
-    void updateCourseFromDto(CourseRequestDTO dto, @MappingTarget Course entity);
-
-    default CourseCategory toCategoryEntity(Long categoryId) {
-        if (categoryId == null) return null;
-        CourseCategory category = new CourseCategory();
-        category.setId(categoryId);
-        return category;
-    }
-
-    default CourseResponseDTO.CourseCategoryDTO toCategoryDTO(CourseCategory category) {
-        if (category == null) return null;
-        return new CourseResponseDTO.CourseCategoryDTO(category.getId(), category.getName(), category.getDescription());
-    }
+    // List mapping from entities to DTOs
+    List<CourseResponseDTO> toDtoList(List<Course> courses);
 }

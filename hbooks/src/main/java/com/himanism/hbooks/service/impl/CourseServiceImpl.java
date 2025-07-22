@@ -3,78 +3,60 @@ package com.himanism.hbooks.service.impl;
 import com.himanism.hbooks.dto.request.CourseRequestDTO;
 import com.himanism.hbooks.dto.response.CourseResponseDTO;
 import com.himanism.hbooks.entity.Course;
-import com.himanism.hbooks.entity.CourseCategory;
-import com.himanism.hbooks.exception.ResourceNotFoundException;
 import com.himanism.hbooks.mapper.CourseMapper;
-import com.himanism.hbooks.repository.CourseCategoryRepository;
 import com.himanism.hbooks.repository.CourseRepository;
 import com.himanism.hbooks.service.CourseService;
-import lombok.RequiredArgsConstructor;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
-    private final CourseCategoryRepository categoryRepository;
-    private final CourseMapper mapper;
+    private final CourseMapper courseMapper;
 
-    @Override
-    @Transactional
-    public CourseResponseDTO createCourse(CourseRequestDTO dto) {
-        Course course = mapper.toEntity(dto);
-
-        if (dto.getCategoryId() != null) {
-            CourseCategory category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId()));
-            course.setCategory(category);
-        }
-
-        Course saved = courseRepository.save(course);
-        return mapper.toResponseDto(saved);
+    public CourseServiceImpl(CourseRepository courseRepository, CourseMapper courseMapper) {
+        this.courseRepository = courseRepository;
+        this.courseMapper = courseMapper;
     }
 
     @Override
     public CourseResponseDTO getCourseById(Long id) {
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
-        return mapper.toResponseDto(course);
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        return courseMapper.toDto(course);   // this requires toDto(Course) method
     }
 
     @Override
     public List<CourseResponseDTO> getAllCourses() {
         List<Course> courses = courseRepository.findAll();
-        return mapper.toResponseDtoList(courses);
+        return courseMapper.toDtoList(courses);
     }
 
     @Override
-    @Transactional
+    public CourseResponseDTO createCourse(CourseRequestDTO dto) {
+        Course course = courseMapper.toEntity(dto);
+        course = courseRepository.save(course);
+        return courseMapper.toDto(course);
+    }
+
+    @Override
     public CourseResponseDTO updateCourse(Long id, CourseRequestDTO dto) {
-        Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
-        mapper.updateCourseFromDto(dto, course);
-
-        if (dto.getCategoryId() != null) {
-            CourseCategory category = categoryRepository.findById(dto.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId()));
-            course.setCategory(category);
-        } else {
-            course.setCategory(null);
-        }
-        Course updated = courseRepository.save(course);
-        return mapper.toResponseDto(updated);
+        Course existing = courseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        courseMapper.updateEntityFromDto(dto, existing);
+        existing = courseRepository.save(existing);
+        return courseMapper.toDto(existing);
     }
 
     @Override
-    public boolean deleteCourseById(Long id) {
-        if (!courseRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Course not found with id: " + id);
-        }
+    public void deleteCourseById(Long id) {
         courseRepository.deleteById(id);
-        return true;
     }
 }
+
+

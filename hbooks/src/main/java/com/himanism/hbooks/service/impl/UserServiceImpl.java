@@ -1,103 +1,101 @@
 package com.himanism.hbooks.service.impl;
 
+
 import com.himanism.hbooks.dto.request.UserRequestDTO;
 import com.himanism.hbooks.dto.response.UserResponseDTO;
 import com.himanism.hbooks.entity.User;
-import com.himanism.hbooks.exception.ResourceNotFoundException;
-import com.himanism.hbooks.mapper.UserMapper;
 import com.himanism.hbooks.repository.UserRepository;
 import com.himanism.hbooks.service.UserService;
-import com.himanism.hbooks.service.helper.UserServiceHelper;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final UserServiceHelper userHelper;
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, UserServiceHelper userHelper) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.userHelper = userHelper;
     }
 
     @Override
-    public UserResponseDTO createUser(UserRequestDTO dto) {
-        try {
-            User user = userMapper.toEntity(dto);
-
-            // Use helper to set fullName and password
-//            userHelper.prepareUserForSave(user);
-
-            User savedUser = userRepository.save(user);
-            return userMapper.toResponseDto(savedUser);
-        } catch (Exception e) {
-            throw new RuntimeException("Error occurred while creating user: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public UserResponseDTO getUserById(Long id) {
-        try {
-            User user = userRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-            return userMapper.toResponseDto(user);
-        } catch (ResourceNotFoundException ex) {
-            throw ex;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch user: " + e.getMessage(), e);
-        }
+    public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
+        log.info("Creating user with email: {}", userRequestDTO.getEmail());
+        User user = mapToEntity(userRequestDTO);
+        User savedUser = userRepository.save(user);
+        log.info("Created user with ID: {}", savedUser.getId());
+        return mapToResponseDTO(savedUser);
     }
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
-        try {
-            List<User> users = userRepository.findAll();
-            return userMapper.toResponseDtoList(users);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch all users: " + e.getMessage(), e);
-        }
+        log.debug("Getting all users");
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
-        try {
-            User user = userRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-
-            // Update entity fields from DTO
-            userMapper.updateUserFromDto(dto, user);
-
-            // Recalculate fullName and password
-//            userHelper.prepareUserForSave(user);
-
-            User saved = userRepository.save(user);
-            return userMapper.toResponseDto(saved);
-        } catch (ResourceNotFoundException ex) {
-            throw ex;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update user: " + e.getMessage(), e);
-        }
+    public UserResponseDTO getUserById(Long id) {
+        log.debug("Getting user by ID: {}", id);
+        User user = userRepository.findById(id).orElseThrow(() -> {
+            log.warn("User not found with ID: {}", id);
+            return new RuntimeException("User not found");
+        });
+        return mapToResponseDTO(user);
     }
 
     @Override
-    public boolean deleteUserById(Long id) {
-        try {
-            if (!userRepository.existsById(id)) {
-                throw new ResourceNotFoundException("User not found with id: " + id);
-            }
-            userRepository.deleteById(id);
-            return true;
-        } catch (ResourceNotFoundException ex) {
-            throw ex;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete user: " + e.getMessage(), e);
-        }
+    public UserResponseDTO updateUser(Long id, UserRequestDTO userRequestDTO) {
+        log.debug("Updating user with ID: {}", id);
+        User user = userRepository.findById(id).orElseThrow(() -> {
+            log.warn("User not found with ID: {}", id);
+            return new RuntimeException("User not found");
+        });
+
+        // Update fields
+        user.setFirstName(userRequestDTO.getFirstName());
+        user.setLastName(userRequestDTO.getLastName());
+        user.setEmail(userRequestDTO.getEmail());
+        // update other fields as needed
+
+        User updatedUser = userRepository.save(user);
+        log.info("Updated user with ID: {}", id);
+        return mapToResponseDTO(updatedUser);
+    }
+
+    @Override
+    public void deleteUserById(Long id) {
+        log.info("Deleting user with ID: {}", id);
+        userRepository.deleteById(id);
+        log.info("Deleted user with ID: {}", id);
+    }
+
+
+    // Helper methods to map DTOs <-> Entities
+    private User mapToEntity(UserRequestDTO dto) {
+        User user = new User();
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+        // map other fields
+        return user;
+    }
+
+    private UserResponseDTO mapToResponseDTO(User user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        // map other fields
+        return dto;
     }
 }

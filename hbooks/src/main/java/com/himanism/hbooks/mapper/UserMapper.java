@@ -1,8 +1,10 @@
 package com.himanism.hbooks.mapper;
 
+
 import com.himanism.hbooks.dto.request.UserRequestDTO;
 import com.himanism.hbooks.dto.response.UserResponseDTO;
 import com.himanism.hbooks.entity.User;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
@@ -11,15 +13,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    // Map Entity to Response DTO
-    UserResponseDTO toResponseDto(User user);
+    UserResponseDTO toDto(User user);
 
-    // Map Request DTO to Entity for creation
-    User toEntity(UserRequestDTO dto);
+    List<UserResponseDTO> toDtoList(List<User> users);
 
-    // Update existing entity fields from request DTO during updates
-    void updateUserFromDto(UserRequestDTO dto, @MappingTarget User entity);
+    User toEntity(UserRequestDTO userRequestDTO);
 
-    // Map list of entities to list of response DTOs
-    List<UserResponseDTO> toResponseDtoList(List<User> users);
+    void updateEntityFromDto(UserRequestDTO dto, @MappingTarget User entity);
 }

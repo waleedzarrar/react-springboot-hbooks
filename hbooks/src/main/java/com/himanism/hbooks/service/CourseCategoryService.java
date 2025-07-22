@@ -1,15 +1,16 @@
 package com.himanism.hbooks.service;
 
-import com.himanism.hbooks.dto.request.CourseCategoryRequestDTO;
-import com.himanism.hbooks.dto.response.CourseCategoryResponseDTO;
+
 
 import java.util.List;
 
+import com.himanism.hbooks.dto.request.CourseCategoryRequestDTO;
+import com.himanism.hbooks.dto.response.CourseCategoryResponseDTO;
+
 public interface CourseCategoryService {
-
-    CourseCategoryResponseDTO createCategory(CourseCategoryRequestDTO dto);
-
-    CourseCategoryResponseDTO getCategoryById(Long id);
-
     List<CourseCategoryResponseDTO> getAllCategories();
+    CourseCategoryResponseDTO getCategoryById(Long id);
+    CourseCategoryResponseDTO createCategory(CourseCategoryRequestDTO dto);
+    CourseCategoryResponseDTO updateCategory(Long id, CourseCategoryRequestDTO dto);
+    void deleteCategoryById(Long id);
 }

@@ -6,6 +6,9 @@ import com.himanism.hbooks.security.JwtService;
 import com.himanism.hbooks.service.impl.CustomUserDetailsService;
 
 import jakarta.validation.Valid;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +21,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@Slf4j
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -33,18 +37,21 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        log.info("Login attempt for email: {}", loginRequest.getEmail());
         UsernamePasswordAuthenticationToken authInputToken =
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
 
         try {
             authenticationManager.authenticate(authInputToken);
         } catch (BadCredentialsException ex) {
+            log.warn("Invalid login attempt for email: {}", loginRequest.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
         final String token = jwtService.generateToken(userDetails);
 
+        log.info("Login successful for email: {}", loginRequest.getEmail());
         return ResponseEntity.ok(Map.of("token", token, "tokenType", "Bearer"));
     }
 }
