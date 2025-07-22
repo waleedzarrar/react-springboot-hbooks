@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/api/v1/courses")
 @RequiredArgsConstructor
 public class CourseController {
 
@@ -31,7 +31,7 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR','FACULTY','STUDENT')")
+//    @PreAuthorize("hasAnyRole('ADMIN','COUNSELLOR','FACULTY','STUDENT')")
     @GetMapping("/{id}")
     public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable Long id) {
         CourseResponseDTO course = service.getCourseById(id);

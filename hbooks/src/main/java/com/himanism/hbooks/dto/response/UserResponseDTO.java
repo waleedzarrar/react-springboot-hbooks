@@ -1,9 +1,10 @@
 package com.himanism.hbooks.dto.response;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import com.himanism.hbooks.enums.Role;
+import lombok.*;
+
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -13,9 +14,10 @@ public class UserResponseDTO {
     private String firstName;
     private String middleName;
     private String lastName;
-    private String fullName;
+    private String fullName; // set by helper
     private String email;
     private String mobileNo;
     private String gender;
     private LocalDate dateOfBirth;
+    private Set<Role> roles;
 }

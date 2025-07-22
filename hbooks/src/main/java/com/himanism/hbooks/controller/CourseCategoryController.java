@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/course-categories")
+@RequestMapping("/api/v1/course-categories")
 @RequiredArgsConstructor
 @Slf4j
 public class CourseCategoryController {

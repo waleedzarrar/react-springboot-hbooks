@@ -1,101 +1,104 @@
 package com.himanism.hbooks.service.impl;
 
-
 import com.himanism.hbooks.dto.request.UserRequestDTO;
 import com.himanism.hbooks.dto.response.UserResponseDTO;
 import com.himanism.hbooks.entity.User;
+import com.himanism.hbooks.mapper.UserMapper;
 import com.himanism.hbooks.repository.UserRepository;
 import com.himanism.hbooks.service.UserService;
+import com.himanism.hbooks.service.helper.UserServiceHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final UserServiceHelper userServiceHelper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, UserServiceHelper userServiceHelper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.userServiceHelper = userServiceHelper;
     }
 
     @Override
+    @Transactional
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         log.info("Creating user with email: {}", userRequestDTO.getEmail());
-        User user = mapToEntity(userRequestDTO);
+
+        // Map DTO to entity (roles are mapped to persistent RoleEntity)
+        User user = userMapper.toEntity(userRequestDTO);
+
+        // Prepare password: encode or generate default if absent
+        user = userServiceHelper.prepareUserForSave(user);
+
+        // Save user to DB (roles must exist already)
         User savedUser = userRepository.save(user);
-        log.info("Created user with ID: {}", savedUser.getId());
-        return mapToResponseDTO(savedUser);
+
+        // Map saved entity to response DTO
+        UserResponseDTO responseDTO = userMapper.toDto(savedUser);
+
+        // Generate and set full name (not from MapStruct)
+        responseDTO.setFullName(userServiceHelper.generateFullName(savedUser));
+
+        log.info("Created User with ID: {}", savedUser.getId());
+
+        return responseDTO;
     }
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
-        log.debug("Getting all users");
-        return userRepository.findAll()
-                .stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+        List<User> users = userRepository.findAll();
+        List<UserResponseDTO> dtos = userMapper.toDtoList(users);
+
+        // Set fullName for each DTO as MapStruct ignores it
+        for (int i = 0; i < dtos.size(); i++) {
+            dtos.get(i).setFullName(userServiceHelper.generateFullName(users.get(i)));
+        }
+
+        return dtos;
     }
 
     @Override
     public UserResponseDTO getUserById(Long id) {
-        log.debug("Getting user by ID: {}", id);
-        User user = userRepository.findById(id).orElseThrow(() -> {
-            log.warn("User not found with ID: {}", id);
-            return new RuntimeException("User not found");
-        });
-        return mapToResponseDTO(user);
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        UserResponseDTO dto = userMapper.toDto(user);
+        dto.setFullName(userServiceHelper.generateFullName(user));
+        return dto;
     }
 
     @Override
+    @Transactional
     public UserResponseDTO updateUser(Long id, UserRequestDTO userRequestDTO) {
-        log.debug("Updating user with ID: {}", id);
-        User user = userRepository.findById(id).orElseThrow(() -> {
-            log.warn("User not found with ID: {}", id);
-            return new RuntimeException("User not found");
-        });
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        // Update fields
-        user.setFirstName(userRequestDTO.getFirstName());
-        user.setLastName(userRequestDTO.getLastName());
-        user.setEmail(userRequestDTO.getEmail());
-        // update other fields as needed
+        // Use mapper to update entity fields except id & password
+        userMapper.updateEntityFromDto(userRequestDTO, existingUser);
 
-        User updatedUser = userRepository.save(user);
-        log.info("Updated user with ID: {}", id);
-        return mapToResponseDTO(updatedUser);
+        // If password was provided explicitly, encode it; otherwise keep existing password
+        if (userRequestDTO.getPassword() != null && !userRequestDTO.getPassword().isBlank()) {
+        	existingUser.setPassword(userServiceHelper.encodePassword(userRequestDTO.getPassword()));
+        }
+
+        User updatedUser = userRepository.save(existingUser);
+
+        UserResponseDTO dto = userMapper.toDto(updatedUser);
+        dto.setFullName(userServiceHelper.generateFullName(updatedUser));
+        return dto;
     }
 
     @Override
+    @Transactional
     public void deleteUserById(Long id) {
-        log.info("Deleting user with ID: {}", id);
         userRepository.deleteById(id);
         log.info("Deleted user with ID: {}", id);
-    }
-
-
-    // Helper methods to map DTOs <-> Entities
-    private User mapToEntity(UserRequestDTO dto) {
-        User user = new User();
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-        // map other fields
-        return user;
-    }
-
-    private UserResponseDTO mapToResponseDTO(User user) {
-        UserResponseDTO dto = new UserResponseDTO();
-        dto.setId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setEmail(user.getEmail());
-        // map other fields
-        return dto;
     }
 }

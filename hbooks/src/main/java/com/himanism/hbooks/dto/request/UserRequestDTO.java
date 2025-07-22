@@ -1,6 +1,5 @@
 package com.himanism.hbooks.dto.request;
 
-import com.himanism.hbooks.enums.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -11,9 +10,6 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRequestDTO {
-
-    @NotBlank(message = "Username is mandatory")
-    private String username;
 
     @NotBlank(message = "Password is mandatory")
     @Size(min = 6, message = "Password must be minimum 6 characters")
@@ -27,12 +23,18 @@ public class UserRequestDTO {
     private String firstName;
 
     private String middleName;
-    
+
     @NotBlank(message = "Last name is mandatory")
     private String lastName;
 
     private LocalDate dateOfBirth;
-    
-    @NotEmpty(message = "At least one role must be assigned")
-    private Set<Role> roles;
+
+    @NotEmpty(message = "User must have at least one role")
+    private Set<com.himanism.hbooks.enums.Role> roles;
+
+    @NotBlank(message = "Mobile number is mandatory")
+    private String mobileNo;
+
+    @NotBlank(message = "Gender is mandatory")
+    private String gender;
 }
