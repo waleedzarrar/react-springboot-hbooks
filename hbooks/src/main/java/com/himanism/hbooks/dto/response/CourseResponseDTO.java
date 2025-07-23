@@ -1,26 +1,18 @@
 package com.himanism.hbooks.dto.response;
 
-
-import lombok.*;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.himanism.hbooks.entity.CourseTrack;
-import com.himanism.hbooks.entity.CourseType;
-
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class CourseResponseDTO {
-
     private Long id;
     private String code;
     private String name;
-    private CourseType type;
-    private CourseTrack track;
+    private String type;
+    private String track;
     private String description;
     private Integer durationInHours;
     private BigDecimal price;
@@ -29,14 +21,11 @@ public class CourseResponseDTO {
     private boolean isSlotBookingRequired;
     private boolean isCustomCourse;
     private List<String> tags;
-    private CourseCategoryDTO category;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private CourseCategoryDTO category; // ✅ Nested object
+    private LocalDateTime created_at;
+    private LocalDateTime updated_at;
 
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
     public static class CourseCategoryDTO {
         private Long id;
         private String name;

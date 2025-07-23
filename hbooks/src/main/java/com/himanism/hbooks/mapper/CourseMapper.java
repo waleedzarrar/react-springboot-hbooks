@@ -1,27 +1,52 @@
 package com.himanism.hbooks.mapper;
 
-
 import com.himanism.hbooks.dto.request.CourseRequestDTO;
 import com.himanism.hbooks.dto.response.CourseResponseDTO;
 import com.himanism.hbooks.entity.Course;
-
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
+import com.himanism.hbooks.entity.CourseCategory;
+import com.himanism.hbooks.repository.CourseCategoryRepository;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
-public interface CourseMapper {
+@Mapper(componentModel = "spring", builder = @Builder(disableBuilder = true))
+public abstract class CourseMapper {
 
-    // Maps entity to response DTO
-    CourseResponseDTO toDto(Course course);
+    @Autowired
+    protected CourseCategoryRepository categoryRepository;
 
-    // Maps creation/update DTO to entity
-    Course toEntity(CourseRequestDTO dto);
+    // DTO → Entity
+    @Mapping(target = "category", ignore = true)
+    public abstract Course toEntity(CourseRequestDTO dto);
 
-    // Update existing entity from DTO
-    void updateEntityFromDto(CourseRequestDTO dto, @MappingTarget Course entity);
+    @AfterMapping
+    protected void setCategoryAfterMapping(CourseRequestDTO dto, @MappingTarget Course course) {
+        if (dto.getCategory() != null) {
+            course.setCategory(categoryRepository.findById(dto.getCategory())
+                    .orElseThrow(() -> new RuntimeException("Category not found: " + dto.getCategory())));
+        }
+    }
 
-    // List mapping from entities to DTOs
-    List<CourseResponseDTO> toDtoList(List<Course> courses);
+    // Entity → DTO
+    @Mapping(target = "category", source = "category")
+    public abstract CourseResponseDTO toDto(Course course);
+
+    // Map nested category
+    public abstract CourseResponseDTO.CourseCategoryDTO toDto(CourseCategory category);
+
+    public abstract List<CourseResponseDTO> toDtoList(List<Course> courses);
+
+    // Update
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "category", ignore = true)
+    public abstract void updateEntityFromDto(CourseRequestDTO dto, @MappingTarget Course entity);
+
+    @AfterMapping
+    protected void updateCategoryAfterMapping(CourseRequestDTO dto, @MappingTarget Course entity) {
+        if (dto.getCategory() != null) {
+            entity.setCategory(categoryRepository.findById(dto.getCategory())
+                    .orElseThrow(() -> new RuntimeException("Category not found: " + dto.getCategory())));
+        }
+    }
 }

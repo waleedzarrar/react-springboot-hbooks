@@ -12,7 +12,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Course {
 
     @Id
@@ -65,18 +64,18 @@ public class Course {
     private CourseCategory category;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime created_at;
 
     @Column
-    private LocalDateTime updatedAt;
+    private LocalDateTime updated_at;
 
     @PrePersist
     public void prePersist() {
-        createdAt = LocalDateTime.now();
+        created_at = LocalDateTime.now();
     }
 
     @PreUpdate
     public void preUpdate() {
-        updatedAt = LocalDateTime.now();
+        updated_at = LocalDateTime.now();
     }
 }

@@ -28,7 +28,7 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponseDTO getCourseById(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
-        return courseMapper.toDto(course);   // this requires toDto(Course) method
+        return courseMapper.toDto(course);
     }
 
     @Override
@@ -58,5 +58,3 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.deleteById(id);
     }
 }
-
-
