@@ -20,5 +20,5 @@ public class LeadResponseDTO {
 
     private LeadStatus status;
 
-    private String uniqueStudentId;
+    private UserResponseDTO user;  // updated from uniqueStudentId (String) to user object
 }

@@ -1,8 +1,14 @@
 package com.himanism.hbooks.controller;
 
 
+import com.himanism.hbooks.dto.UserWithStudentProfileDTO;
 import com.himanism.hbooks.dto.request.UserRequestDTO;
 import com.himanism.hbooks.dto.response.UserResponseDTO;
+import com.himanism.hbooks.entity.StudentProfile;
+import com.himanism.hbooks.entity.User;
+import com.himanism.hbooks.mapper.UserMapper;
+import com.himanism.hbooks.repository.StudentProfileRepository;
+import com.himanism.hbooks.repository.UserRepository;
 import com.himanism.hbooks.service.UserService;
 
 import jakarta.validation.Valid;
@@ -19,12 +25,32 @@ import java.util.List;
 @Slf4j
 public class UserController {
 
-    private final UserService userService;
+	private final UserService userService;
+    private final UserRepository userRepository;
+    private final StudentProfileRepository studentProfileRepository;
+    private final UserMapper userMapper;
+    
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository, StudentProfileRepository studentProfileRepository, UserMapper userMapper) {
         this.userService = userService;
+		this.userRepository = userRepository;
+		this.studentProfileRepository = studentProfileRepository;
+		this.userMapper = userMapper;
+    }
+    
+    @GetMapping("/{id}/withStudentProfile")
+    public ResponseEntity<UserWithStudentProfileDTO> getUserWithStudentProfile(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        StudentProfile studentProfile = studentProfileRepository.findById(id).orElse(null);
+
+        UserWithStudentProfileDTO dto = userMapper.toUserWithStudentProfileDto(user, studentProfile);
+
+        return ResponseEntity.ok(dto);
     }
 
+    
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         log.info("Received create user request for email: {}", userRequestDTO.getEmail());

@@ -24,6 +24,6 @@ public class LeadRequestDTO {
     @NotNull
     private LeadStatus status;
 
-    @NotBlank
-    private String uniqueStudentId;
+    @NotNull
+    private Long userId;  // updated from uniqueStudentId to userId (Long)
 }
